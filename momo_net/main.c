@@ -26,14 +26,14 @@ int main(int argc, char *argv[])
         /*just exit lol!*/
         exit(1);
     }
-    printf("Server-socket() is OK...\n");
+    printf("Server-socket() %10s", "OK\n");
     /*"address already in use" error message */
     if(setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
     {
         perror("Server-setsockopt() error lol!");
         exit(1);
     }
-    printf("Server-setsockopt() is OK...\n");
+    printf("Server-setsockopt() %10s", "OK\n");
     
     /* bind */
     serveraddr.sin_family = AF_INET;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
         perror("Server-bind() error lol!");
         exit(1);
     }
-    printf("Server-bind() is OK...\n");
+    printf("Server-bind() %10s", "OK\n");
     
     /* listen */
     if(listen(listener, 10) == -1)
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
         perror("Server-listen() error lol!");
         exit(1);
     }
-    printf("Server-listen() is OK...\n");
+    printf("Server-listen() %10s", "OK\n");
     
     /* add the listener to the master set */
     FD_SET(listener, &master);
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
             perror("Server-select() error lol!");
             exit(1);
         }
-        printf("New data input...\n");
+        printf("Select() %10s", "OK\n");
         
         /*run through the existing connections looking for data to be read*/
         for(i = 0; i <= fdmax; i++)
@@ -89,14 +89,14 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                        printf("Server-accept() is OK...\n");
+                        printf("Server-accept() %10s", "OK\n");
                         
                         FD_SET(newfd, &master); /* add to master set */
                         if(newfd > fdmax)
                         { /* keep track of the maximum */
                             fdmax = newfd;
                         }
-                        printf("New connection from %s on socket %d\n", inet_ntoa(clientaddr.sin_addr), newfd);
+                        printf("New connection from %2s on socket %2d\n", inet_ntoa(clientaddr.sin_addr), newfd);
                     }
                 }
                 else
@@ -119,17 +119,21 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
+                        printf("<== %2s\n", buf);
                         /* we got some data from a client*/
                         for(j = 0; j <= fdmax; j++)
                         {
                             /* send to everyone! */
                             if(FD_ISSET(j, &master))
                             {
+                                
                                 /* except the listener and ourselves */
+                                
                                 if(j != listener && j != i)
                                 {
                                     if(send(j, buf, nbytes, 0) == -1)
                                         perror("send() error lol!");
+                                    printf("==> %2s\n", buf);
                                 }
                             }
                         }
